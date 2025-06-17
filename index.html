@@ -229,26 +229,32 @@
             tooltip.style('opacity', 0);
         }
         
-        // Gráfico de barras
+        // Gráfico de coordenadas del cursor
         function coordsPixels(selector) {
-            const margin = { top: 20, right: 30, bottom: 40, left: 60 };
             const width = 400 - margin.left - margin.right;
             const height = 300 - margin.top - margin.bottom;
             
             const svg = d3.select('#coordsPixels')
             .append('svg')
             .attr('width', width)
-            .attr('height', height);
-            
-            var txt = d3.select(selector).append('text');
-            var svg = d3.select(selector).attr('cursor', 'crosshair')
-                .on('mousemove', function() {
-                  var pt = d3.mouse(svg.node());
-                  txt.attr('x', 18+pt[0])
-                    .attr('y', 6+pt[1])
-                    .text('' + pt[0] + ',' + pt[1]);
+            .attr('height', height)
+            .style('background', '#f8f9fa')
+            .style('border', '1px solid #dee2e6');
+                        
+            const txt = svg.append('text')
+            .attr('x', 10)
+            .attr('y', 20)
+            .style('font-size', '14px')
+            .style('fill', '#495057')
+            .text('Mueve el cursor sobre esta área');
+                        
+            svg.attr('cursor', 'crosshair')
+            .on('mousemove', function(event) {
+                const pt = d3.pointer(event, svg.node());
+                txt.attr('x', 18 + pt[0])
+                    .attr('y', 6 + pt[1])
+                    .text(`${Math.round(pt[0])}, ${Math.round(pt[1])}`);
                 });
-            }
 
         // Gráfico de iluminacion de datos  
         function makeBrush() {
