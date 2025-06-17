@@ -236,41 +236,6 @@
             tooltip.style('opacity', 0);
         }
 
-        // Crear tarjetas de estadísticas
-        function createStatsCards() {
-            const stats = [
-                { label: 'Ventas Totales', value: '$328K', icon: '💰' },
-                { label: 'Usuarios Activos', value: '8.2K', icon: '👥' },
-                { label: 'Productos', value: '1,247', icon: '📦' },
-                { label: 'Conversión', value: '3.2%', icon: '📈' }
-            ];
-
-            const statsContainer = d3.select('#stats');
-            
-            const cards = statsContainer.selectAll('.stat-card')
-                .data(stats)
-                .enter()
-                .append('div')
-                .attr('class', 'stat-card')
-                .style('opacity', 0)
-                .style('transform', 'translateY(20px)');
-
-            cards.append('div')
-                .attr('class', 'stat-value')
-                .text(d => d.value);
-
-            cards.append('div')
-                .attr('class', 'stat-label')
-                .text(d => `${d.icon} ${d.label}`);
-
-            // Animación de entrada
-            cards.transition()
-                .duration(800)
-                .delay((d, i) => i * 100)
-                .style('opacity', 1)
-                .style('transform', 'translateY(0)');
-        }
-
         // Gráfico de barras
         function createBarChart() {
             const margin = { top: 20, right: 30, bottom: 40, left: 60 };
@@ -529,7 +494,6 @@
 
         // Inicializar dashboard
         function initDashboard() {
-            createStatsCards();
             createBarChart();
             createPieChart();
             createLineChart();
