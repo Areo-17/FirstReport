@@ -157,6 +157,17 @@
             opacity: 0.8;
         }
 
+        .brush-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        #brush1, #brush2 {
+            background: lightgrey;
+            border: 1px solid #ccc;
+        }
+
         @media (max-width: 768px) {
             .charts-grid {
                 grid-template-columns: 1fr;
@@ -169,6 +180,11 @@
             .header h1 {
                 font-size: 2em;
             }
+
+            .brush-container {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
@@ -179,7 +195,20 @@
             <p>Visualización de datos con D3.js</p>
         </div>
 
-        <div class="stats-grid" id="stats"></div>
+        <div class="stats-grid" id="stats">
+            <div class="stat-card">
+                <div class="stat-value">5</div>
+                <div class="stat-label">Visualizaciones</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">D3.js</div>
+                <div class="stat-label">Tecnología</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Interactivo</div>
+            </div>
+        </div>
 
         <div class="charts-grid">
             <div class="chart-container">
@@ -189,24 +218,34 @@
 
             <div class="chart-container">
                 <div class="chart-title">🥧 Data illumination</div>
-                <div id="makeBrush"></div>
+                <div id="makeBrush">
+                    <div class="brush-container">
+                        <svg id="brush1" width="140" height="140"></svg>
+                        <svg id="brush2" width="140" height="140"></svg>
+                    </div>
+                </div>
             </div>
 
             <div class="chart-container full-width">
                 <div class="chart-title">📊 Circles color change</div>
-                <div id="DragDrop"></div>
+                <div id="DragDrop">
+                    <svg id="dragdrop" width="100%" height="300"></svg>
+                </div>
             </div>
 
              <div class="chart-container">
-                <div class="chart-title">📈 Bar chart </div>
-                <div id="Stagger"></div>
+                <div class="chart-title">📈 Bar chart</div>
+                <div id="Stagger">
+                    <svg id="stagger" width="100%" height="300"></svg>
+                </div>
             </div>
 
              <div class="chart-container">
                 <div class="chart-title">📈 Lissajous frequencies</div>
-                <div id="Lissajous"></div>
+                <div id="Lissajous">
+                    <svg id="lissajous" width="100%" height="300"></svg>
+                </div>
             </div>
-            
         </div>
     </div>
 
@@ -230,264 +269,214 @@
         }
         
         // Gráfico de coordenadas del cursor
-        function coordsPixels(selector) {
-            const width = 400 - margin.left - margin.right;
-            const height = 300 - margin.top - margin.bottom;
+        function coordsPixels() {
+            const width = 350;
+            const height = 250;
             
             const svg = d3.select('#coordsPixels')
-            .append('svg')
-            .attr('width', width)
-            .attr('height', height)
-            .style('background', '#f8f9fa')
-            .style('border', '1px solid #dee2e6');
-                        
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .style('background', '#f8f9fa')
+                .style('border', '1px solid #dee2e6');
+            
             const txt = svg.append('text')
-            .attr('x', 10)
-            .attr('y', 20)
-            .style('font-size', '14px')
-            .style('fill', '#495057')
-            .text('Mueve el cursor sobre esta área');
-                        
+                .attr('x', 10)
+                .attr('y', 20)
+                .style('font-size', '14px')
+                .style('fill', '#495057')
+                .text('Mueve el cursor sobre esta área');
+            
             svg.attr('cursor', 'crosshair')
-            .on('mousemove', function(event) {
-                const pt = d3.pointer(event, svg.node());
-                txt.attr('x', 18 + pt[0])
-                    .attr('y', 6 + pt[1])
-                    .text(`${Math.round(pt[0])}, ${Math.round(pt[1])}`);
+                .on('mousemove', function(event) {
+                    const pt = d3.pointer(event, svg.node());
+                    txt.attr('x', 18 + pt[0])
+                        .attr('y', 6 + pt[1])
+                        .text(`${Math.round(pt[0])}, ${Math.round(pt[1])}`);
                 });
+        }
 
-        // Gráfico de iluminacion de datos  
+        // Gráfico de iluminación de datos  
         function makeBrush() {
-            const width = 350;
-            const height = 300;
-            const radius = Math.min(width, height) / 2 - 20;
+            // Crear datos de muestra
+            const sampleData = [
+                {A: 30, B: 40}, {A: 60, B: 30}, {A: 90, B: 60}, {A: 40, B: 90},
+                {A: 70, B: 20}, {A: 100, B: 100}, {A: 20, B: 70}, {A: 110, B: 45},
+                {A: 50, B: 60}, {A: 80, B: 80}, {A: 45, B: 35}, {A: 105, B: 70},
+                {A: 65, B: 50}, {A: 85, B: 110}, {A: 35, B: 20}, {A: 95, B: 85}
+            ];
             
-            const svg = d3.select('#makeBrush')
-            .append('svg')
-            .attr('width', width)
-            .attr('height', height);
-            
-            d3.csv("FirstReport/dense.csv").then( function ( data ) {
-            var svg1 = d3.select( "#brush1" ), svg2 = d3.select( "#brush2" );
+            const svg1 = d3.select("#brush1");
+            const svg2 = d3.select("#brush2");
      
-            var sc1 = d3.scaleLinear()
-              .domain([0, 10, 50])
-              .range(["lime", "yellow", "red"]);
-            var sc2 = d3.scaleLinear()
-              .domain([0, 10, 50])
-              .range(["lime", "yellow", "blue"]);
+            const sc1 = d3.scaleLinear()
+                .domain([0, 10, 50])
+                .range(["lime", "yellow", "red"]);
+            const sc2 = d3.scaleLinear()
+                .domain([0, 10, 50])
+                .range(["lime", "yellow", "blue"]);
      
-            var cs1 = drawCircles( svg1, data, d => d["A"], d => d["B"], sc1);
-            var cs2 = drawCircles( svg2, data, d => d["A"], d => d["B"], sc2);
+            const cs1 = drawCircles(svg1, sampleData, d => d["A"], d => d["B"], sc1);
+            const cs2 = drawCircles(svg2, sampleData, d => d["A"], d => d["B"], sc2);
      
-            svg1.call(installHandlers, data, cs1, cs2, sc1, sc2);
-          });
+            svg1.call(installHandlers, sampleData, cs1, cs2, sc1, sc2);
         }
      
-        function drawCircles( svg, data, accX, accY, sc ) {
-          var color = sc(Infinity);
-          return svg.selectAll("circle")
-            .data(data)
-            .enter()
-            .append("circle")
-            .attr("r", 5)
-            .attr("cx", accX)
-            .attr("cy", accY)
-            .attr("fill", color)
-            .attr("fill-opacity", 0.4);
+        function drawCircles(svg, data, accX, accY, sc) {
+            const color = sc(Infinity);
+            return svg.selectAll("circle")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("r", 5)
+                .attr("cx", accX)
+                .attr("cy", accY)
+                .attr("fill", color)
+                .attr("fill-opacity", 0.6)
+                .attr("stroke", "#333")
+                .attr("stroke-width", 1);
         }
      
-        function installHandlers( svg, data, cs1, cs2, sc1, sc2) {
-          svg.attr("cursor", "crosshair")
-            .on("mousemove", function() {
-              var pt = d3.mouse(svg.node());
-              cs1.attr("fill", function( d, i ) {
-                var r = Math.hypot( pt[0] - d3.select(this).attr("cx"),
-                                    pt[1] - d3.select(this).attr("cy"));
-                data[i]["r"] = r;
-                return sc1(r);
-              })
-              cs2.attr("fill", (d, i) => sc2(data[i]["r"]));
-            })
-            .on("mouseleave", function() {
-              cs1.attr("fill", sc1(Infinity));
-              cs2.attr("fill", sc2(Infinity));
-            })
+        function installHandlers(svg, data, cs1, cs2, sc1, sc2) {
+            svg.attr("cursor", "crosshair")
+                .on("mousemove", function(event) {
+                    const pt = d3.pointer(event, svg.node());
+                    cs1.attr("fill", function(d, i) {
+                        const cx = +d3.select(this).attr("cx");
+                        const cy = +d3.select(this).attr("cy");
+                        const r = Math.hypot(pt[0] - cx, pt[1] - cy);
+                        data[i]["r"] = r;
+                        return sc1(r);
+                    });
+                    cs2.attr("fill", (d, i) => sc2(data[i]["r"]));
+                })
+                .on("mouseleave", function() {
+                    cs1.attr("fill", sc1(Infinity));
+                    cs2.attr("fill", sc2(Infinity));
+                });
         }
         
-        // Grafico de cambio de color de circulos
+        // Gráfico de cambio de color de círculos
         function makeDragDrop() {
-            const margin = { top: 20, right: 30, bottom: 40, left: 60 };
-            const width = 400 - margin.left - margin.right;
-            const height = 300 - margin.top - margin.bottom;
+            const svg = d3.select('#dragdrop');
             
-            const svg = d3.select('#DragDrop')
-            .append('svg')
-            .attr('width', width)
-            .attr('height', height);
+            // Crear círculos de muestra
+            const circles = [
+                {x: 100, y: 100, color: "red"},
+                {x: 200, y: 150, color: "blue"},
+                {x: 300, y: 100, color: "green"},
+                {x: 150, y: 200, color: "orange"},
+                {x: 250, y: 200, color: "purple"}
+            ];
             
-            var widget = undefined, color = undefined;
+            let widget = undefined, originalColor = undefined;
             
-            var drag = d3.drag()
-            .on("start", function() {
-              color = d3.select(this).attr("fill");
-              widget = d3.select(this).attr("fill", "lime");
-            })
-            .on("drag", function() {
-              var pt = d3.mouse(d3.select(this).node());
-              widget.attr("cx", pt[0]).attr("cy", pt[1]);
-            })
-            .on("end", function() {
-              widget.attr("fill", color);
-              widget = undefined;
-            });
-            drag(d3.select("#dragdrop").selectAll("circle"));
-            }
+            const drag = d3.drag()
+                .on("start", function(event, d) {
+                    originalColor = d3.select(this).attr("fill");
+                    widget = d3.select(this).attr("fill", "lime");
+                })
+                .on("drag", function(event, d) {
+                    widget.attr("cx", event.x).attr("cy", event.y);
+                })
+                .on("end", function(event, d) {
+                    widget.attr("fill", originalColor);
+                    widget = undefined;
+                });
+            
+            svg.selectAll("circle")
+                .data(circles)
+                .enter()
+                .append("circle")
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y)
+                .attr("r", 20)
+                .attr("fill", d => d.color)
+                .attr("stroke", "#333")
+                .attr("stroke-width", 2)
+                .style("cursor", "move")
+                .call(drag);
+        }
         
-        // Grafico de barras en movimiento
+        // Gráfico de barras en movimiento
         function makeStagger() {
-            const margin = { top: 20, right: 30, bottom: 40, left: 60 };
-            const width = 400 - margin.left - margin.right;
-            const height = 300 - margin.top - margin.bottom;
+            let ds1 = [2, 1, 3, 5, 7, 8, 9, 9, 9, 8, 7, 5, 3, 1, 2];
+            let ds2 = [8, 9, 8, 7, 5, 3, 2, 1, 2, 3, 5, 7, 8, 9, 8];
+            const n = ds1.length;
+            const mx = d3.max(d3.merge([ds1, ds2]));
+            const svg = d3.select("#stagger");
             
-            const svg = d3.select('#Stagger')
-            .append('svg')
-            .attr('width', width)
-            .attr('height', height);
+            const scX = d3.scaleLinear().domain([0, n]).range([50, 540]);
+            const scY = d3.scaleLinear().domain([0, mx]).range([250, 50]);
             
-            var ds1 = [ 2, 1, 3, 5, 7, 8, 9, 9, 9, 8, 7, 5, 3, 1, 2 ];      //<1>
-            var ds2 = [ 8, 9, 8, 7, 5, 3, 2, 1, 2, 3, 5, 7, 8, 9, 8 ];
-            var n = ds1.length, mx = d3.max( d3.merge( [ds1, ds2] ) );      //<2>
-            var svg = d3.select( "#stagger" );
+            svg.selectAll("line")
+                .data(ds1)
+                .enter()
+                .append("line")
+                .attr("stroke", "red")
+                .attr("stroke-width", 20)
+                .attr("x1", (d, i) => scX(i))
+                .attr("y1", scY(0))
+                .attr("x2", (d, i) => scX(i))
+                .attr("y2", d => scY(d));
             
-            var scX = d3.scaleLinear().domain( [0,n] ).range( [50,540] );   //<3>
-            var scY = d3.scaleLinear().domain( [0,mx] ).range( [250,50] );
+            svg.style("cursor", "pointer")
+                .on("click", function() {
+                    [ds1, ds2] = [ds2, ds1];
+                    svg.selectAll("line")
+                        .data(ds1)
+                        .transition()
+                        .duration(1000)
+                        .delay((d, i) => 200 * i)
+                        .attr("y2", d => scY(d));
+                });
             
-            svg.selectAll( "line" ).data( ds1 ).enter().append( "line" )    //<4>
-              .attr( "stroke", "red" ).attr( "stroke-width", 20 )
-              .attr( "x1", (d,i)=>scX(i) ).attr( "y1", scY(0) )
-              .attr( "x2", (d,i)=>scX(i) ).attr( "y2", d=>scY(d) );
-            
-            svg.on( "click", function() {                                   //<5>
-              [ ds1, ds2 ] = [ ds2, ds1 ];                                //<6>
-              svg.selectAll( "line" ).data( ds1 )                         //<7>
-                  .transition().duration( 1000 ).delay( (d,i)=>200*i )    //<8>
-                  .attr( "y2", d=>scY(d) );                               //<9>
-            } );
-            }
+            // Agregar texto instructivo
+            svg.append("text")
+                .attr("x", 300)
+                .attr("y", 30)
+                .attr("text-anchor", "middle")
+                .style("font-size", "14px")
+                .style("fill", "#666")
+                .text("Haz clic para animar las barras");
+        }
 
-        // Grafico de lissajous
+        // Gráfico de Lissajous
         function makeLissajous() {
-            const margin = { top: 20, right: 30, bottom: 40, left: 60 };
-            const width = 400 - margin.left - margin.right;
-            const height = 300 - margin.top - margin.bottom;
+            const svg = d3.select("#lissajous");
             
-            const svg = d3.select('#Lissajous')
-            .append('svg')
-            .attr('width', width)
-            .attr('height', height);
+            const a = 1.9, b = 3.2; // Frecuencias de Lissajous
+            let phi, omega = 2 * Math.PI / 10000; // 10 segundos por período
             
-            var svg = d3.select( "#lissajous" );
+            let crrX = 150 + 100, crrY = 150 + 0;
+            let prvX = crrX, prvY = crrY;
             
-            var a = 1.9, b = 3.2;             // Lissajous frequencies
-            var phi, omega = 2*Math.PI/10000; // 10 seconds per period
+            const timer = d3.timer(function(t) {
+                phi = omega * t;
             
-            var crrX = 150+100, crrY = 150+0;
-            var prvX = crrX, prvY = crrY;
+                crrX = 150 + 100 * Math.cos(a * phi);
+                crrY = 150 + 100 * Math.sin(b * phi);
             
-            var timer = d3.timer( function(t) {
-                phi = omega*t;
-            
-                crrX = 150+100*Math.cos(a*phi);
-                crrY = 150+100*Math.sin(b*phi);
-            
-                svg.selectAll( "line" )
-                    .each( function() { this.bogus_opacity *= .99 } )
-                    .attr( "stroke-opacity", function() { return this.bogus_opacity } )
-                    .filter( function() { return this.bogus_opacity < 0.05 } )
+                svg.selectAll("line")
+                    .each(function() { 
+                        if (!this.bogus_opacity) this.bogus_opacity = 1.0;
+                        this.bogus_opacity *= 0.99;
+                    })
+                    .attr("stroke-opacity", function() { return this.bogus_opacity })
+                    .filter(function() { return this.bogus_opacity < 0.05 })
                     .remove(); 
-                svg.append( "line" )
-                    .each( function() { this.bogus_opacity = 1.0 } )
-                    .attr( "x1", prvX ).attr( "y1", prvY ) 
-                    .attr( "x2", crrX ).attr( "y2", crrY )
-                    .attr( "stroke", "green" ).attr( "stroke-width", 2 );
+                    
+                svg.append("line")
+                    .each(function() { this.bogus_opacity = 1.0 })
+                    .attr("x1", prvX).attr("y1", prvY) 
+                    .attr("x2", crrX).attr("y2", crrY)
+                    .attr("stroke", "green").attr("stroke-width", 2);
             
                 prvX = crrX;
                 prvY = crrY;
             
-                if( t > 120e3 ) { timer.stop(); } // 120 seconds
-            } );
-            
-            }
-        
-        // Gráfico circular (pie chart)
-        function createPieChart() {
-            const width = 350;
-            const height = 300;
-            const radius = Math.min(width, height) / 2 - 20;
-
-            const svg = d3.select('#pieChart')
-                .append('svg')
-                .attr('width', width)
-                .attr('height', height);
-
-            const g = svg.append('g')
-                .attr('transform', `translate(${width/2},${height/2})`);
-
-            const pie = d3.pie()
-                .value(d => d.value)
-                .sort(null);
-
-            const arc = d3.arc()
-                .innerRadius(radius * 0.4)
-                .outerRadius(radius);
-
-            const arcHover = d3.arc()
-                .innerRadius(radius * 0.4)
-                .outerRadius(radius * 1.1);
-
-            const arcs = g.selectAll('.arc')
-                .data(pie(categoryData))
-                .enter()
-                .append('g')
-                .attr('class', 'arc');
-
-            arcs.append('path')
-                .attr('d', arc)
-                .attr('fill', d => d.data.color)
-                .style('opacity', 0)
-                .on('mouseover', function(event, d) {
-                    d3.select(this)
-                        .transition()
-                        .duration(200)
-                        .attr('d', arcHover);
-                    showTooltip(event, `<strong>${d.data.category}</strong><br>${d.data.value}%`);
-                })
-                .on('mouseout', function() {
-                    d3.select(this)
-                        .transition()
-                        .duration(200)
-                        .attr('d', arc);
-                    hideTooltip();
-                })
-                .transition()
-                .duration(800)
-                .delay((d, i) => i * 100)
-                .style('opacity', 1);
-
-            // Etiquetas
-            arcs.append('text')
-                .attr('transform', d => `translate(${arc.centroid(d)})`)
-                .attr('text-anchor', 'middle')
-                .style('font-size', '12px')
-                .style('font-weight', 'bold')
-                .style('fill', 'white')
-                .style('opacity', 0)
-                .text(d => d.data.value + '%')
-                .transition()
-                .duration(800)
-                .delay((d, i) => i * 100 + 400)
-                .style('opacity', 1);
+                if (t > 60e3) { timer.stop(); } // 60 segundos
+            });
         }
 
         // Inicializar dashboard
@@ -495,8 +484,7 @@
             coordsPixels();
             makeBrush();
             makeDragDrop();
-            makeStragger();
-            createPieChart();
+            makeStagger();
             makeLissajous();
         }
 
