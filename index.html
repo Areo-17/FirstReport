@@ -184,7 +184,7 @@
         <div class="charts-grid">
             <div class="chart-container">
                 <div class="chart-title">📈 Cursor coordinates</div>
-                <div id="cursorCoordinates"></div>
+                <div id="coordsPixels"></div>
             </div>
 
             <div class="chart-container">
@@ -204,7 +204,7 @@
 
              <div class="chart-container">
                 <div class="chart-title">📈 Lissajous frequencies</div>
-                <div id="barChart"></div>
+                <div id="makeBrush"></div>
             </div>
             
         </div>
@@ -213,24 +213,6 @@
     <div class="tooltip" id="tooltip"></div>
 
     <script>
-        // Datos de ejemplo
-        const salesData = [
-            { month: 'Ene', sales: 45000, users: 1200 },
-            { month: 'Feb', sales: 52000, users: 1350 },
-            { month: 'Mar', sales: 48000, users: 1280 },
-            { month: 'Abr', sales: 61000, users: 1450 },
-            { month: 'May', sales: 55000, users: 1380 },
-            { month: 'Jun', sales: 67000, users: 1520 }
-        ];
-
-        const categoryData = [
-            { category: 'Electrónicos', value: 35, color: '#667eea' },
-            { category: 'Ropa', value: 25, color: '#764ba2' },
-            { category: 'Hogar', value: 20, color: '#f093fb' },
-            { category: 'Deportes', value: 12, color: '#f5576c' },
-            { category: 'Otros', value: 8, color: '#4facfe' }
-        ];
-
         // Configuración general
         const tooltip = d3.select('#tooltip');
 
@@ -252,6 +234,10 @@ function coordsPixels(selector) {
     const margin = { top: 20, right: 30, bottom: 40, left: 60 };
     const width = 400 - margin.left - margin.right;
     const height = 300 - margin.top - margin.bottom;
+    const svg = d3.select('#coordsPixels')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height);
     
     var txt = d3.select(selector).append('text')
       .attr('font-family', 'Arial, sans-serif')
@@ -341,53 +327,62 @@ function coordsPixels(selector) {
 
         // Gráfico de líneas        
         function makeBrush() {
-      d3.csv("dense.csv").then( function ( data ) {
-        var svg1 = d3.select( "#brush1" ), svg2 = d3.select( "#brush2" );
- 
-        var sc1 = d3.scaleLinear()
-          .domain([0, 10, 50])
-          .range(["lime", "yellow", "red"]);
-        var sc2 = d3.scaleLinear()
-          .domain([0, 10, 50])
-          .range(["lime", "yellow", "blue"]);
- 
-        var cs1 = drawCircles( svg1, data, d => d["A"], d => d["B"], sc1);
-        var cs2 = drawCircles( svg2, data, d => d["A"], d => d["B"], sc2);
- 
-        svg1.call(installHandlers, data, cs1, cs2, sc1, sc2);
-      });
-    }
- 
-    function drawCircles( svg, data, accX, accY, sc ) {
-      var color = sc(Infinity);
-      return svg.selectAll("circle")
-        .data(data)
-        .enter()
-        .append("circle")
-        .attr("r", 5)
-        .attr("cx", accX)
-        .attr("cy", accY)
-        .attr("fill", color)
-        .attr("fill-opacity", 0.4);
-    }
- 
-    function installHandlers( svg, data, cs1, cs2, sc1, sc2) {
-      svg.attr("cursor", "crosshair")
-        .on("mousemove", function() {
-          var pt = d3.mouse(svg.node());
-          cs1.attr("fill", function( d, i ) {
-            var r = Math.hypot( pt[0] - d3.select(this).attr("cx"),
-                                pt[1] - d3.select(this).attr("cy"));
-            data[i]["r"] = r;
-            return sc1(r);
-          })
-          cs2.attr("fill", (d, i) => sc2(data[i]["r"]));
-        })
-        .on("mouseleave", function() {
-          cs1.attr("fill", sc1(Infinity));
-          cs2.attr("fill", sc2(Infinity));
-        })
-    }
+            const width = 350;
+            const height = 300;
+            const radius = Math.min(width, height) / 2 - 20;
+            
+            const svg = d3.select('#makeBrush')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+            
+            d3.csv("dense.csv").then( function ( data ) {
+            var svg1 = d3.select( "#brush1" ), svg2 = d3.select( "#brush2" );
+     
+            var sc1 = d3.scaleLinear()
+              .domain([0, 10, 50])
+              .range(["lime", "yellow", "red"]);
+            var sc2 = d3.scaleLinear()
+              .domain([0, 10, 50])
+              .range(["lime", "yellow", "blue"]);
+     
+            var cs1 = drawCircles( svg1, data, d => d["A"], d => d["B"], sc1);
+            var cs2 = drawCircles( svg2, data, d => d["A"], d => d["B"], sc2);
+     
+            svg1.call(installHandlers, data, cs1, cs2, sc1, sc2);
+          });
+        }
+     
+        function drawCircles( svg, data, accX, accY, sc ) {
+          var color = sc(Infinity);
+          return svg.selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("r", 5)
+            .attr("cx", accX)
+            .attr("cy", accY)
+            .attr("fill", color)
+            .attr("fill-opacity", 0.4);
+        }
+     
+        function installHandlers( svg, data, cs1, cs2, sc1, sc2) {
+          svg.attr("cursor", "crosshair")
+            .on("mousemove", function() {
+              var pt = d3.mouse(svg.node());
+              cs1.attr("fill", function( d, i ) {
+                var r = Math.hypot( pt[0] - d3.select(this).attr("cx"),
+                                    pt[1] - d3.select(this).attr("cy"));
+                data[i]["r"] = r;
+                return sc1(r);
+              })
+              cs2.attr("fill", (d, i) => sc2(data[i]["r"]));
+            })
+            .on("mouseleave", function() {
+              cs1.attr("fill", sc1(Infinity));
+              cs2.attr("fill", sc2(Infinity));
+            })
+        }
 
         // Inicializar dashboard
         function initDashboard() {
