@@ -290,28 +290,32 @@
 
         // Gráfico de iluminación de datos  
        function makeBrush() {
-            // Crear datos de muestra
-            d3.csv("https://github.com/Areo-17/FirstReport/blob/main/dense.csv").then(function(data) {
-            data.forEach(d => {
-                d.A = +d.A; // Convert string values to numbers
-                d.B = +d.B;
-            })});
+            let globalData; // Define a global variable
+
+            d3.csv("https://areo-17.github.io/FirstReport/dense.csv").then(function(data) {
+                data.forEach(d => {
+                    d.A = +d.A; // Convert to numbers
+                    d.B = +d.B;
+                });
             
-            const svg1 = d3.select("#brush1");
-            const svg2 = d3.select("#brush2");
-     
-            const sc1 = d3.scaleLinear()
-                .domain([0, 10, 50])
-                .range(["lime", "yellow", "red"]);
-            const sc2 = d3.scaleLinear()
-                .domain([0, 10, 50])
-                .range(["lime", "yellow", "blue"]);
-     
-            const cs1 = drawCircles(svg1, data, d => d.A, d => d.B, sc1);
-            const cs2 = drawCircles(svg2, data, d => d.A, d => d.B, sc2);
-     
-            svg1.call(installHandlers, data, cs1, cs2, sc1, sc2);
-        }
+                globalData = data; // Assign parsed data to the global variable
+            
+                const svg1 = d3.select("#brush1");
+                const svg2 = d3.select("#brush2");
+            
+                const sc1 = d3.scaleLinear()
+                    .domain([0, 10, 50])
+                    .range(["lime", "yellow", "red"]);
+                const sc2 = d3.scaleLinear()
+                    .domain([0, 10, 50])
+                    .range(["lime", "yellow", "blue"]);
+            
+                const cs1 = drawCircles(svg1, globalData, d => d.A, d => d.B, sc1);
+                const cs2 = drawCircles(svg2, globalData, d => d.A, d => d.B, sc2);
+            
+                svg1.call(installHandlers, globalData, cs1, cs2, sc1, sc2);
+            });
+       }
      
         function drawCircles(svg, data, accX, accY, sc) {
             const color = sc(Infinity);
