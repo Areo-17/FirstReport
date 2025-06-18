@@ -307,8 +307,8 @@
                 .domain([0, 10, 50])
                 .range(["lime", "yellow", "blue"]);
      
-            const cs1 = drawCircles(svg1, sampleData, d => d["A"], d => d["B"], sc1);
-            const cs2 = drawCircles(svg2, sampleData, d => d["A"], d => d["B"], sc2);
+            const cs1 = drawCircles(svg1, data, d => d.A, d => d.B, sc1);
+            const cs2 = drawCircles(svg2, data, d => d.A, d => d.B, sc2);
      
             svg1.call(installHandlers, data, cs1, cs2, sc1, sc2);
         }
