@@ -289,13 +289,13 @@
         }
 
         // Gráfico de iluminación de datos  
-        function makeBrush() {
+       function makeBrush() {
             // Crear datos de muestra
             d3.csv("https://github.com/Areo-17/FirstReport/blob/main/dense.csv").then(function(data) {
             data.forEach(d => {
                 d.A = +d.A; // Convert string values to numbers
                 d.B = +d.B;
-            });
+            })});
             
             const svg1 = d3.select("#brush1");
             const svg2 = d3.select("#brush2");
