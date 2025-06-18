@@ -197,27 +197,19 @@
 
         <div class="stats-grid" id="stats">
             <div class="stat-card">
-                <div class="stat-value">5</div>
-                <div class="stat-label">Visualizaciones</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">D3.js</div>
-                <div class="stat-label">Tecnología</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">100%</div>
-                <div class="stat-label">Interactivo</div>
+                <div class="stat-value">Data visualization</div>
+                <div class="stat-label">Ariel Joel Buenfil Góngora :P</div>
             </div>
         </div>
 
         <div class="charts-grid">
             <div class="chart-container">
-                <div class="chart-title">📈 Cursor coordinates</div>
+                <div class="chart-title">Cursor coordinates</div>
                 <div id="coordsPixels"></div>
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">🥧 Data illumination</div>
+                <div class="chart-title">Data illumination</div>
                 <div id="makeBrush">
                     <div class="brush-container">
                         <svg id="brush1" width="140" height="140"></svg>
@@ -227,21 +219,21 @@
             </div>
 
             <div class="chart-container full-width">
-                <div class="chart-title">📊 Circles color change</div>
+                <div class="chart-title">Circles color change</div>
                 <div id="DragDrop">
                     <svg id="dragdrop" width="100%" height="300"></svg>
                 </div>
             </div>
 
              <div class="chart-container">
-                <div class="chart-title">📈 Bar chart</div>
+                <div class="chart-title">Bar chart</div>
                 <div id="Stagger">
                     <svg id="stagger" width="100%" height="300"></svg>
                 </div>
             </div>
 
              <div class="chart-container">
-                <div class="chart-title">📈 Lissajous frequencies</div>
+                <div class="chart-title">Lissajous frequencies</div>
                 <div id="Lissajous">
                     <svg id="lissajous" width="100%" height="300"></svg>
                 </div>
@@ -299,12 +291,11 @@
         // Gráfico de iluminación de datos  
         function makeBrush() {
             // Crear datos de muestra
-            const sampleData = [
-                {A: 30, B: 40}, {A: 60, B: 30}, {A: 90, B: 60}, {A: 40, B: 90},
-                {A: 70, B: 20}, {A: 100, B: 100}, {A: 20, B: 70}, {A: 110, B: 45},
-                {A: 50, B: 60}, {A: 80, B: 80}, {A: 45, B: 35}, {A: 105, B: 70},
-                {A: 65, B: 50}, {A: 85, B: 110}, {A: 35, B: 20}, {A: 95, B: 85}
-            ];
+            d3.csv("https://github.com/Areo-17/FirstReport/blob/main/dense.csv").then(function(data) {
+            data.forEach(d => {
+                d.A = +d.A; // Convert string values to numbers
+                d.B = +d.B;
+            });
             
             const svg1 = d3.select("#brush1");
             const svg2 = d3.select("#brush2");
@@ -319,7 +310,7 @@
             const cs1 = drawCircles(svg1, sampleData, d => d["A"], d => d["B"], sc1);
             const cs2 = drawCircles(svg2, sampleData, d => d["A"], d => d["B"], sc2);
      
-            svg1.call(installHandlers, sampleData, cs1, cs2, sc1, sc2);
+            svg1.call(installHandlers, data, cs1, cs2, sc1, sc2);
         }
      
         function drawCircles(svg, data, accX, accY, sc) {
@@ -356,7 +347,7 @@
                 });
         }
         
-        // Gráfico de cambio de color de círculos
+        // Gráfico de selección y cambio de posición de círculos
         function makeDragDrop() {
             const svg = d3.select('#dragdrop');
             
